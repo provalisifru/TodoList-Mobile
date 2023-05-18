@@ -2,8 +2,15 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
+import {RootStackParamList} from '../../navigator/NavigatorParams';
+import {StackScreenProps} from '@react-navigation/stack';
 
-const LoginBox = () => {
+type Props = StackScreenProps<RootStackParamList, 'Login'>;
+
+const LoginBox = ({navigation}: Props) => {
+  const logIn = () => {
+    navigation.navigate('Main');
+  };
   return (
     <View>
       <Text className="text-textColorThree leading-[35px] text-center mx-24 my-[24px] text-[24px]">
@@ -17,6 +24,7 @@ const LoginBox = () => {
         <Input secureTextEntry={true} placeholder="Enter password..." />
       </View>
       <Button
+        onPress={logIn}
         textStyle="text-white text-[24px]"
         styles="bg-backgroundTwo mt-[20px] mx-auto w-[120px] h-[50px] rounded-[60px]"
         text="Sign in"

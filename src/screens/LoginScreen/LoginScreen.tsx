@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import LoginBox from '../../controls/LoginBox/LoginBox';
 
-const LoginScreen = () => {
+const LoginScreen = ({navigation}) => {
   return (
     <View className="bg-background flex flex-1">
       <View>
@@ -10,7 +10,7 @@ const LoginScreen = () => {
           Welcome{'\n'}to{'\n'}Todo List
         </Text>
       </View>
-      <LoginBox />
+      <LoginBox navigation={navigation} />
     </View>
   );
 };
