@@ -9,6 +9,7 @@ module.exports = {
         textColor: '#ECE5F0',
         textColorTwo: '#155263',
         textColorThree: '#508484',
+        taskFinished: '#555555',
       },
     },
   },

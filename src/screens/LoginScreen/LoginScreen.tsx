@@ -1,8 +1,12 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 import LoginBox from '../../controls/LoginBox/LoginBox';
+import {RootStackParamList} from '../../navigator/NavigatorParams';
+import {StackScreenProps} from '@react-navigation/stack';
 
-const LoginScreen = ({navigation}) => {
+type Props = StackScreenProps<RootStackParamList, 'Login'>;
+
+const LoginScreen = ({navigation}: Props) => {
   return (
     <View className="bg-background flex flex-1">
       <View>

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import {RootStackParamList} from '../../navigator/NavigatorParams';
@@ -29,9 +29,11 @@ const LoginBox = ({navigation}: Props) => {
         styles="bg-backgroundTwo mt-[20px] mx-auto w-[120px] h-[50px] rounded-[60px]"
         text="Sign in"
       />
-      <Text className="text-textColorTwo text-center mt-[20px] text-[20px] font-bold">
-        Continue as guest
-      </Text>
+      <TouchableOpacity>
+        <Text className="text-textColorTwo text-center mt-[20px] text-[20px] font-bold">
+          Continue as guest
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };

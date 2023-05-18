@@ -6,7 +6,7 @@ import React from 'react';
 import LoginNavigator from './src/navigator/Navigator';
 export const App = () => {
   return (
-    <SafeAreaView>
+    <SafeAreaView className="h-full w-full">
       <LoginNavigator />
     </SafeAreaView>
   );
