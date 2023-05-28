@@ -1,10 +1,14 @@
-import React from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import React, {useState} from 'react';
+import {Modal, Text, TouchableOpacity, View} from 'react-native';
 import Button from '../../components/Button/Button';
 
 import {RootStackParamList} from '../../navigator/NavigatorParams';
 import {StackScreenProps} from '@react-navigation/stack';
+<<<<<<< HEAD
 import AsyncStorage from '@react-native-async-storage/async-storage';
+=======
+import TaskAddPopup from '../../controls/TaskAddPopup/TaskAddPopup';
+>>>>>>> 3f457eaf71ec87d43bc7289ed1205453f66dcfbd
 
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
 
@@ -32,6 +36,11 @@ const tasks = [
 ];
 
 const MainScreen = ({navigation}: Props) => {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const closePopUp = () => {
+    setModalVisible(false);
+  };
   const command = () => {
     AsyncStorage.removeItem('token');
     navigation.navigate('Login');
@@ -57,7 +66,7 @@ const MainScreen = ({navigation}: Props) => {
       <Text className="text-[32px] text-textColor font-bold self-center my-6 mx-24 text-center">
         Welcome back, USER!
       </Text>
-      <View className="bg-backgroundTwo m-6">
+      <View className="bg-backgroundTwo m-6 flex flex-1">
         <View className="flex flex-row items-center justify-between m-3">
           <Text className="text-textColor text-[20px] font-bold underline underline-offset-8">
             Today's tasks
@@ -94,7 +103,11 @@ const MainScreen = ({navigation}: Props) => {
               <View
                 key={id}
                 className="flex flex-row justify-between items-center">
+<<<<<<< HEAD
                 <Text className="mx-5 my-2 text-[20px] text-textColor" key={id}>
+=======
+                <Text className="mx-5 my-2 text-[20px] text-textColor">
+>>>>>>> 3f457eaf71ec87d43bc7289ed1205453f66dcfbd
                   {task.name}
                 </Text>
                 <View className="flex flex-row items-center justify-end">
@@ -110,6 +123,26 @@ const MainScreen = ({navigation}: Props) => {
               </View>
             );
           })}
+        </View>
+        <View className="absolute bottom-0 right-0 m-6">
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            className="bg-white w-[64px] h-[64px] pb-1 align-middle rounded-full flex">
+            <Text className="text-backgroundTwo text-[50px] text-center font-bold m-auto">
+              +
+            </Text>
+          </TouchableOpacity>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}>
+            <View className="absolute bottom-[20px] h-[73%] w-[90%] left-[20px]">
+              <TaskAddPopup command={closePopUp} />
+            </View>
+          </Modal>
         </View>
       </View>
     </View>
