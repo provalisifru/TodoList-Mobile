@@ -4,6 +4,7 @@ import Button from '../../components/Button/Button';
 
 import {RootStackParamList} from '../../navigator/NavigatorParams';
 import {StackScreenProps} from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
 
@@ -32,6 +33,7 @@ const tasks = [
 
 const MainScreen = ({navigation}: Props) => {
   const command = () => {
+    AsyncStorage.removeItem('token');
     navigation.navigate('Login');
   };
 
@@ -69,7 +71,9 @@ const MainScreen = ({navigation}: Props) => {
         <View>
           {tasks.map((task, id) => {
             return task.isFinished ? (
-              <View className="flex flex-row justify-between items-center">
+              <View
+                key={id}
+                className="flex flex-row justify-between items-center">
                 <Text
                   className="mx-5 my-2 text-[20px] text-taskFinished line-through"
                   key={id}>
@@ -87,7 +91,9 @@ const MainScreen = ({navigation}: Props) => {
                 </View>
               </View>
             ) : (
-              <View className="flex flex-row justify-between items-center">
+              <View
+                key={id}
+                className="flex flex-row justify-between items-center">
                 <Text className="mx-5 my-2 text-[20px] text-textColor" key={id}>
                   {task.name}
                 </Text>

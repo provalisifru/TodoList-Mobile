@@ -1,16 +1,34 @@
-import React from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import React, {useContext} from 'react';
+import {Alert, Text, TouchableOpacity, View} from 'react-native';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import {RootStackParamList} from '../../navigator/NavigatorParams';
 import {StackScreenProps} from '@react-navigation/stack';
+import {AppContext} from '../../../context/AppContext';
+import api from '../../api/methods';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginBox = ({navigation}: Props) => {
-  const logIn = () => {
-    navigation.navigate('Main');
+  const {userUsername, setUserUsername, userPassword, setUserPassword} =
+    useContext(AppContext);
+
+  const logIn = async () => {
+    await api.logIn(userUsername, userPassword).then(response => {
+      if (response?.status === 200) {
+        AsyncStorage.setItem('token', String(response.data));
+        navigation.navigate('Main');
+      } else {
+        Alert.alert(
+          'Login failed',
+          'Invalid username and password combination, please try again.',
+          [{text: 'OK'}],
+        );
+      }
+    });
   };
+
   return (
     <View>
       <Text className="text-textColorThree leading-[35px] text-center mx-24 my-[24px] text-[24px]">
@@ -18,10 +36,21 @@ const LoginBox = ({navigation}: Props) => {
       </Text>
       <Text className="text-textColor text-[40px] text-center">Login</Text>
       <View className="m-6 mx-9 p-2 rounded-full bg-white">
-        <Input placeholder="Enter username..." />
+        <Input
+          value={userUsername}
+          placeholder="Enter username..."
+          setState={setUserUsername}
+          styles={'text-black p-2'}
+        />
       </View>
       <View className="m-6 mx-9 p-2 rounded-full bg-white">
-        <Input secureTextEntry={true} placeholder="Enter password..." />
+        <Input
+          secureTextEntry={true}
+          placeholder="Enter password..."
+          value={userPassword}
+          setState={setUserPassword}
+          styles={'text-black p-2'}
+        />
       </View>
       <Button
         onPress={logIn}
