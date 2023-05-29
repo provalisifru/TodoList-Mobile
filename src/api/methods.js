@@ -14,13 +14,17 @@ const logIn = async (username, password) => {
   }
 };
 
-const getUsers = async id => {
+const getTasks = async token => {
   try {
-    const response = await axios.get(`${url}api/Users`);
+    const response = await axios.get(`${url}api/Tasks`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     return error;
   }
 };
 
-export default {logIn, getUsers};
+export default {logIn, getTasks};

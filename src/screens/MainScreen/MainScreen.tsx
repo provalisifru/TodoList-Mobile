@@ -1,42 +1,33 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Modal, Text, TouchableOpacity, View} from 'react-native';
 import Button from '../../components/Button/Button';
 
 import {RootStackParamList} from '../../navigator/NavigatorParams';
 import {StackScreenProps} from '@react-navigation/stack';
-<<<<<<< HEAD
 import AsyncStorage from '@react-native-async-storage/async-storage';
-=======
 import TaskAddPopup from '../../controls/TaskAddPopup/TaskAddPopup';
->>>>>>> 3f457eaf71ec87d43bc7289ed1205453f66dcfbd
+import api from '../../api/methods';
 
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
 
-const tasks = [
-  {
-    name: 'Walk a dog',
-    isFinished: true,
-  },
-  {
-    name: 'Wash your teeth',
-    isFinished: true,
-  },
-  {
-    name: 'Meditate',
-    isFinished: false,
-  },
-  {
-    name: 'Call your friend',
-    isFinished: false,
-  },
-  {
-    name: 'Go to gym',
-    isFinished: false,
-  },
-];
-
 const MainScreen = ({navigation}: Props) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [userTasks, setUserTasks] = useState([]);
+
+  useEffect(() => {
+    const getTasks = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          let tasks = await api.getTasks(token);
+          setUserTasks(tasks);
+        }
+      } catch (error) {
+        return error;
+      }
+    };
+    getTasks();
+  }, []);
 
   const closePopUp = () => {
     setModalVisible(false);
@@ -78,7 +69,7 @@ const MainScreen = ({navigation}: Props) => {
           </TouchableOpacity>
         </View>
         <View>
-          {tasks.map((task, id) => {
+          {userTasks.map((task, id) => {
             return task.isFinished ? (
               <View
                 key={id}
@@ -86,7 +77,7 @@ const MainScreen = ({navigation}: Props) => {
                 <Text
                   className="mx-5 my-2 text-[20px] text-taskFinished line-through"
                   key={id}>
-                  {task.name}
+                  {task.taskName}
                 </Text>
                 <View className="flex flex-row items-center justify-end">
                   <TouchableOpacity className="h-[26px] w-[26px] bg-white flex items-center mr-6">
@@ -103,12 +94,8 @@ const MainScreen = ({navigation}: Props) => {
               <View
                 key={id}
                 className="flex flex-row justify-between items-center">
-<<<<<<< HEAD
                 <Text className="mx-5 my-2 text-[20px] text-textColor" key={id}>
-=======
-                <Text className="mx-5 my-2 text-[20px] text-textColor">
->>>>>>> 3f457eaf71ec87d43bc7289ed1205453f66dcfbd
-                  {task.name}
+                  {task.taskName}
                 </Text>
                 <View className="flex flex-row items-center justify-end">
                   <TouchableOpacity className="h-[26px] w-[26px] bg-white flex items-center mr-6">
