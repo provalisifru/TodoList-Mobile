@@ -17,7 +17,7 @@ const LoginBox = ({navigation}: Props) => {
   const logIn = async () => {
     await api.logIn(userUsername, userPassword).then(response => {
       if (response?.status === 200) {
-        AsyncStorage.setItem('token', String(response.data));
+        AsyncStorage.setItem('token', String(response.data.token));
         navigation.navigate('Main');
       } else {
         Alert.alert(

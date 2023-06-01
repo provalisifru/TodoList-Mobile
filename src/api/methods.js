@@ -16,7 +16,7 @@ const logIn = async (username, password) => {
 
 const getTasks = async token => {
   try {
-    const response = await axios.get(`${url}api/Tasks`, {
+    const response = await axios.get(`${url}api/Tasks/userTasks`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -27,4 +27,22 @@ const getTasks = async token => {
   }
 };
 
-export default {logIn, getTasks};
+const updateTasks = async (taskIds, updatedTaskDataArray, token) => {
+  try {
+    const tasksToUpdate = taskIds.map((taskId, index) => ({
+      taskId,
+      updatedTaskData: updatedTaskDataArray[index],
+    }));
+
+    const response = await axios.put('/api/Tasks/userTasks', tasksToUpdate, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export default {logIn, getTasks, updateTasks};

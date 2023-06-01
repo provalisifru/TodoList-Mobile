@@ -37,6 +37,70 @@ const MainScreen = ({navigation}: Props) => {
     navigation.navigate('Login');
   };
 
+  const changeIsFinished = (taskId: string) => {
+    // Find the index of the task in the array
+    const taskIndex = userTasks.findIndex(task => task.taskId === taskId);
+
+    // If the task is found in the array
+    if (taskIndex !== -1) {
+      // Create a new copy of the tasks array
+      const updatedTasks = [...userTasks];
+
+      // Update the 'isFinished' property of the task
+      updatedTasks[taskIndex].isFinished = !updatedTasks[taskIndex].isFinished;
+      // Check if task is changed
+      if (updatedTasks[taskIndex].isChanged) {
+        updatedTasks[taskIndex].isChanged = !updatedTasks[taskIndex].isChanged;
+      } else {
+        updatedTasks[taskIndex].isChanged = true;
+      }
+
+      // Update the state with the modified tasks array
+      setUserTasks(updatedTasks);
+    }
+  };
+
+  const deleteTask = (taskId: string) => {
+    const taskIndex = userTasks.findIndex(task => task.taskId === taskId);
+
+    // If the task is found in the array
+    if (taskIndex !== -1) {
+      // Create a new copy of the tasks array
+      const updatedTasks = [...userTasks];
+
+      // Delete task from array of tasks
+      updatedTasks.splice(taskIndex, 1);
+
+      // Update the state with the modified tasks array
+      setUserTasks(updatedTasks);
+    }
+  };
+
+  const saveTasks = () => {
+    const updatedTasks = userTasks.filter(task => task.isChanged);
+
+    const taskIds = userTasks.map(task => task.taskId);
+
+    const updatedTaskData = updatedTasks.map(task => ({
+      isFinished: task.isFinished,
+    }));
+
+    const getToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          return token;
+        }
+      } catch (error) {
+        return error;
+      }
+    };
+
+    const token = getToken();
+
+    api.updateTasks(taskIds, updatedTaskData, token);
+  };
+
   return (
     <View className="flex bg-background flex-1">
       <View className="flex flex-row items-center justify-between mx-6">
@@ -69,47 +133,57 @@ const MainScreen = ({navigation}: Props) => {
           </TouchableOpacity>
         </View>
         <View>
-          {userTasks.map((task, id) => {
-            return task.isFinished ? (
-              <View
-                key={id}
-                className="flex flex-row justify-between items-center">
-                <Text
-                  className="mx-5 my-2 text-[20px] text-taskFinished line-through"
-                  key={id}>
-                  {task.taskName}
-                </Text>
-                <View className="flex flex-row items-center justify-end">
-                  <TouchableOpacity className="h-[26px] w-[26px] bg-white flex items-center mr-6">
-                    <Text className="text-textColorTwo text-[26px] font-bold">
-                      {task.isFinished ? '✓' : ''}
+          {userTasks.length > 0 ? (
+            userTasks.map((task, id) => {
+              return (
+                <View
+                  key={id}
+                  className="flex flex-row justify-between items-center">
+                  {task.isFinished ? (
+                    <Text
+                      className="mx-5 my-2 text-[20px] text-taskFinished line-through"
+                      key={id}>
+                      {task.taskName}
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity className="h-[32px] w-[32px]flex items-center mb-1 mr-4">
-                    <Text className="text-[#840B0B] text-[32px]">X</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ) : (
-              <View
-                key={id}
-                className="flex flex-row justify-between items-center">
-                <Text className="mx-5 my-2 text-[20px] text-textColor" key={id}>
-                  {task.taskName}
-                </Text>
-                <View className="flex flex-row items-center justify-end">
-                  <TouchableOpacity className="h-[26px] w-[26px] bg-white flex items-center mr-6">
-                    <Text className="text-textColorTwo text-[26px] font-bold">
-                      {task.isFinished ? '✓' : ''}
+                  ) : (
+                    <Text
+                      className="mx-5 my-2 text-[20px] text-textColor"
+                      key={id}>
+                      {task.taskName}
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity className="h-[32px] w-[32px]flex items-center mb-1 mr-4">
-                    <Text className="text-[#840B0B] text-[32px]">X</Text>
-                  </TouchableOpacity>
+                  )}
+                  <View className="flex flex-row items-center justify-end">
+                    <TouchableOpacity
+                      className="h-[26px] w-[26px] bg-white flex items-center mr-6"
+                      onPress={() => changeIsFinished(task.taskId)}>
+                      <Text className="text-textColorTwo text-[20px] font-bold">
+                        {task.isFinished ? '✓' : ''}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className="h-[32px] w-[32px]flex items-center mb-1 mr-4"
+                      onPress={() => deleteTask(task.taskId)}>
+                      <Text className="text-[#840B0B] text-[32px]">X</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            );
-          })}
+              );
+            })
+          ) : (
+            <View className="flex self-center m-6">
+              <Text className="text-textColor text-center text-[32px]">
+                No tasks found. Please add new tasks!
+              </Text>
+            </View>
+          )}
+        </View>
+        <View className="absolute bottom-0 left-0 m-6">
+          <Button
+            onPress={saveTasks}
+            textStyle="text-white text-[24px]"
+            styles="bg-background mt-[20px] mx-auto w-[120px] h-[50px] rounded-[60px]"
+            text="Save tasks"
+          />
         </View>
         <View className="absolute bottom-0 right-0 m-6">
           <TouchableOpacity
