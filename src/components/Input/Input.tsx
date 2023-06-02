@@ -8,6 +8,7 @@ interface InputProps {
   setState?: (str: string) => void;
   onFocus?: any;
   secureTextEntry?: boolean;
+  multiline?: boolean;
 }
 
 const Input = ({
@@ -15,6 +16,7 @@ const Input = ({
   placeholder,
   styles,
   value,
+  multiline = false,
   setState = () => {},
   onFocus,
 }: InputProps) => {
@@ -23,6 +25,7 @@ const Input = ({
       onChangeText={setState}
       onFocus={onFocus}
       value={value}
+      multiline={multiline}
       placeholder={placeholder}
       className={`text-[24px] ${styles}`}
       placeholderTextColor={'#AAAAAA'}

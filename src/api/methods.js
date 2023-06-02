@@ -31,10 +31,41 @@ const updateTasks = async (taskIds, updatedTaskDataArray, token) => {
   try {
     const tasksToUpdate = taskIds.map((taskId, index) => ({
       taskId,
-      updatedTaskData: updatedTaskDataArray[index],
+      isCompleted: updatedTaskDataArray[index].isCompleted,
     }));
 
-    const response = await axios.put('/api/Tasks/userTasks', tasksToUpdate, {
+    const response = await axios.patch(
+      `${url}api/Tasks/userTasks`,
+      tasksToUpdate,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const deleteTasks = async (deletedTasksId, token) => {
+  try {
+    const response = await axios.delete(`${url}api/Tasks/userTasks`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: deletedTasksId,
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const deleteAllTasks = async token => {
+  try {
+    const response = await axios.delete(`${url}api/Tasks/deleteAllTasks`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -45,4 +76,26 @@ const updateTasks = async (taskIds, updatedTaskDataArray, token) => {
   }
 };
 
-export default {logIn, getTasks, updateTasks};
+const addTask = async (task, token) => {
+  try {
+    const response = await axios.post(`${url}api/Tasks/userTasks`, task, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('Task added successfully:', response.data);
+  } catch (error) {
+    console.error('Error while adding task:', error.response.data);
+  }
+};
+
+export default {
+  logIn,
+  getTasks,
+  updateTasks,
+  deleteTasks,
+  deleteAllTasks,
+  addTask,
+};

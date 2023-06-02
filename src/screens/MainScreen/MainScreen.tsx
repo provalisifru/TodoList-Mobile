@@ -13,6 +13,8 @@ type Props = StackScreenProps<RootStackParamList, 'Login'>;
 const MainScreen = ({navigation}: Props) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [userTasks, setUserTasks] = useState([]);
+  const [deletedTasksId, setDeletedTasksId] = useState([]);
+  const [flagIsChanged, setFlagIsChanged] = useState(false);
 
   useEffect(() => {
     const getTasks = async () => {
@@ -37,7 +39,19 @@ const MainScreen = ({navigation}: Props) => {
     navigation.navigate('Login');
   };
 
-  const changeIsFinished = (taskId: string) => {
+  const getToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        return token;
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
+  const changeIsCompleted = (taskId: string) => {
+    setFlagIsChanged(true);
     // Find the index of the task in the array
     const taskIndex = userTasks.findIndex(task => task.taskId === taskId);
 
@@ -46,14 +60,11 @@ const MainScreen = ({navigation}: Props) => {
       // Create a new copy of the tasks array
       const updatedTasks = [...userTasks];
 
-      // Update the 'isFinished' property of the task
-      updatedTasks[taskIndex].isFinished = !updatedTasks[taskIndex].isFinished;
+      // Update the 'isCompleted' property of the task
+      updatedTasks[taskIndex].isCompleted =
+        !updatedTasks[taskIndex].isCompleted;
       // Check if task is changed
-      if (updatedTasks[taskIndex].isChanged) {
-        updatedTasks[taskIndex].isChanged = !updatedTasks[taskIndex].isChanged;
-      } else {
-        updatedTasks[taskIndex].isChanged = true;
-      }
+      updatedTasks[taskIndex].isChanged = true;
 
       // Update the state with the modified tasks array
       setUserTasks(updatedTasks);
@@ -61,12 +72,19 @@ const MainScreen = ({navigation}: Props) => {
   };
 
   const deleteTask = (taskId: string) => {
+    setFlagIsChanged(true);
     const taskIndex = userTasks.findIndex(task => task.taskId === taskId);
 
     // If the task is found in the array
     if (taskIndex !== -1) {
       // Create a new copy of the tasks array
       const updatedTasks = [...userTasks];
+
+      const deletedTasks = [...deletedTasksId];
+
+      deletedTasks.push(taskId);
+
+      setDeletedTasksId(deletedTasks);
 
       // Delete task from array of tasks
       updatedTasks.splice(taskIndex, 1);
@@ -76,29 +94,44 @@ const MainScreen = ({navigation}: Props) => {
     }
   };
 
-  const saveTasks = () => {
+  const saveTasks = async () => {
     const updatedTasks = userTasks.filter(task => task.isChanged);
 
-    const taskIds = userTasks.map(task => task.taskId);
+    const taskIds = updatedTasks.map(task => task.taskId);
 
     const updatedTaskData = updatedTasks.map(task => ({
-      isFinished: task.isFinished,
+      isCompleted: task.isCompleted ? 1 : 0,
     }));
 
-    const getToken = async () => {
+    if (deletedTasksId.length > 0) {
       try {
-        const token = await AsyncStorage.getItem('token');
-        if (token) {
-          return token;
-        }
+        const token = await getToken();
+        await api.deleteTasks(deletedTasksId, token);
+        setDeletedTasksId([]);
       } catch (error) {
-        return error;
+        // Handle error here
+        console.error('Error while deleting tasks:', error);
       }
-    };
+    }
 
-    const token = getToken();
+    try {
+      const token = await getToken();
+      await api.updateTasks(taskIds, updatedTaskData, token);
+    } catch (error) {
+      // Handle error here
+      console.error('Error while updating tasks:', error);
+    }
+  };
 
-    api.updateTasks(taskIds, updatedTaskData, token);
+  const deleteAllTasks = async () => {
+    try {
+      const token = await getToken();
+      await api.deleteAllTasks(token);
+      setUserTasks([]);
+    } catch (error) {
+      // Handle error here
+      console.error('Error while deleting tasks:', error);
+    }
   };
 
   return (
@@ -119,18 +152,20 @@ const MainScreen = ({navigation}: Props) => {
         </View>
       </View>
       <Text className="text-[32px] text-textColor font-bold self-center my-6 mx-24 text-center">
-        Welcome back, USER!
+        Welcome back!
       </Text>
       <View className="bg-backgroundTwo m-6 flex flex-1">
         <View className="flex flex-row items-center justify-between m-3">
           <Text className="text-textColor text-[20px] font-bold underline underline-offset-8">
             Today's tasks
           </Text>
-          <TouchableOpacity>
-            <Text className="text-textColorTwo font-bold text-[20px]">
-              Delete all
-            </Text>
-          </TouchableOpacity>
+          {userTasks.length > 0 ? (
+            <TouchableOpacity onPress={() => deleteAllTasks()}>
+              <Text className="text-textColorTwo font-bold text-[20px]">
+                Delete all
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
         <View>
           {userTasks.length > 0 ? (
@@ -139,7 +174,7 @@ const MainScreen = ({navigation}: Props) => {
                 <View
                   key={id}
                   className="flex flex-row justify-between items-center">
-                  {task.isFinished ? (
+                  {task.isCompleted ? (
                     <Text
                       className="mx-5 my-2 text-[20px] text-taskFinished line-through"
                       key={id}>
@@ -155,9 +190,9 @@ const MainScreen = ({navigation}: Props) => {
                   <View className="flex flex-row items-center justify-end">
                     <TouchableOpacity
                       className="h-[26px] w-[26px] bg-white flex items-center mr-6"
-                      onPress={() => changeIsFinished(task.taskId)}>
+                      onPress={() => changeIsCompleted(task.taskId)}>
                       <Text className="text-textColorTwo text-[20px] font-bold">
-                        {task.isFinished ? '✓' : ''}
+                        {task.isCompleted ? '✓' : ''}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -177,19 +212,22 @@ const MainScreen = ({navigation}: Props) => {
             </View>
           )}
         </View>
-        <View className="absolute bottom-0 left-0 m-6">
-          <Button
-            onPress={saveTasks}
-            textStyle="text-white text-[24px]"
-            styles="bg-background mt-[20px] mx-auto w-[120px] h-[50px] rounded-[60px]"
-            text="Save tasks"
-          />
-        </View>
+        {flagIsChanged ? (
+          <View className="absolute bottom-0 left-0 m-6">
+            <Button
+              onPress={saveTasks}
+              textStyle="text-white text-[24px]"
+              styles="bg-background mt-[20px] mx-auto w-[120px] h-[50px] rounded-[60px]"
+              text="Save tasks"
+            />
+          </View>
+        ) : null}
+
         <View className="absolute bottom-0 right-0 m-6">
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
-            className="bg-white w-[64px] h-[64px] pb-1 align-middle rounded-full flex">
-            <Text className="text-backgroundTwo text-[50px] text-center font-bold m-auto">
+            className="bg-white w-[64px] h-[64px] pb-1 rounded-full flex">
+            <Text className="text-backgroundTwo text-[40px] font-bold m-auto">
               +
             </Text>
           </TouchableOpacity>
