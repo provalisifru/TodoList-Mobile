@@ -84,10 +84,9 @@ const addTask = async (task, token) => {
         'Content-Type': 'application/json',
       },
     });
-
-    console.log('Task added successfully:', response.data);
+    return response;
   } catch (error) {
-    console.error('Error while adding task:', error.response.data);
+    return error;
   }
 };
 

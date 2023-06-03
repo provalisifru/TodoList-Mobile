@@ -16,23 +16,25 @@ const MainScreen = ({navigation}: Props) => {
   const [deletedTasksId, setDeletedTasksId] = useState([]);
   const [flagIsChanged, setFlagIsChanged] = useState(false);
 
-  useEffect(() => {
-    const getTasks = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (token) {
-          let tasks = await api.getTasks(token);
-          setUserTasks(tasks);
-        }
-      } catch (error) {
-        return error;
+  const getTasks = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        let tasks = await api.getTasks(token);
+        setUserTasks(tasks);
       }
-    };
+    } catch (error) {
+      return error;
+    }
+  };
+
+  useEffect(() => {
     getTasks();
   }, []);
 
   const closePopUp = () => {
     setModalVisible(false);
+    getTasks();
   };
   const command = () => {
     AsyncStorage.removeItem('token');
@@ -95,6 +97,7 @@ const MainScreen = ({navigation}: Props) => {
   };
 
   const saveTasks = async () => {
+    setFlagIsChanged(false);
     const updatedTasks = userTasks.filter(task => task.isChanged);
 
     const taskIds = updatedTasks.map(task => task.taskId);
@@ -131,6 +134,20 @@ const MainScreen = ({navigation}: Props) => {
     } catch (error) {
       // Handle error here
       console.error('Error while deleting tasks:', error);
+    }
+  };
+
+  const showDetails = taskId => {
+    const taskIndex = userTasks.findIndex(task => task.taskId === taskId);
+    const updatedTasks = [...userTasks];
+
+    if (taskIndex !== -1) {
+      if (updatedTasks[taskIndex].detailsShown) {
+        updatedTasks[taskIndex].detailsShown =
+          !updatedTasks[taskIndex].detailsShown;
+      } else updatedTasks[taskIndex].detailsShown = true;
+
+      setUserTasks(updatedTasks);
     }
   };
 
@@ -171,36 +188,50 @@ const MainScreen = ({navigation}: Props) => {
           {userTasks.length > 0 ? (
             userTasks.map((task, id) => {
               return (
-                <View
-                  key={id}
-                  className="flex flex-row justify-between items-center">
-                  {task.isCompleted ? (
-                    <Text
-                      className="mx-5 my-2 text-[20px] text-taskFinished line-through"
-                      key={id}>
-                      {task.taskName}
-                    </Text>
-                  ) : (
-                    <Text
-                      className="mx-5 my-2 text-[20px] text-textColor"
-                      key={id}>
-                      {task.taskName}
-                    </Text>
-                  )}
-                  <View className="flex flex-row items-center justify-end">
-                    <TouchableOpacity
-                      className="h-[26px] w-[26px] bg-white flex items-center mr-6"
-                      onPress={() => changeIsCompleted(task.taskId)}>
-                      <Text className="text-textColorTwo text-[20px] font-bold">
-                        {task.isCompleted ? '✓' : ''}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className="h-[32px] w-[32px]flex items-center mb-1 mr-4"
-                      onPress={() => deleteTask(task.taskId)}>
-                      <Text className="text-[#840B0B] text-[32px]">X</Text>
-                    </TouchableOpacity>
+                <View>
+                  <View
+                    key={id}
+                    className="flex flex-row justify-between items-center">
+                    {task.isCompleted ? (
+                      <TouchableOpacity onPress={() => showDetails()}>
+                        <Text
+                          className="mx-5 my-2 text-[20px] text-taskFinished line-through"
+                          key={id}>
+                          {task.taskName}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() => showDetails(task.taskId)}>
+                        <Text
+                          className="mx-5 my-2 text-[20px] text-textColor"
+                          key={id}>
+                          {task.taskName}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    <View className="flex flex-row items-center justify-end">
+                      <TouchableOpacity
+                        className="h-[26px] w-[26px] bg-white flex items-center mr-6"
+                        onPress={() => changeIsCompleted(task.taskId)}>
+                        <Text className="text-textColorTwo text-[20px] font-bold">
+                          {task.isCompleted ? '✓' : ''}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        className="h-[32px] w-[32px]flex items-center mb-1 mr-4"
+                        onPress={() => deleteTask(task.taskId)}>
+                        <Text className="text-[#840B0B] text-[32px]">X</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
+                  {task.detailsShown ? (
+                    <View key={`${id}details`}>
+                      <Text className="mx-5 my-2 text-[15px] text-textColorThree">
+                        {task.taskDescription}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
               );
             })
@@ -238,7 +269,7 @@ const MainScreen = ({navigation}: Props) => {
             onRequestClose={() => {
               setModalVisible(!modalVisible);
             }}>
-            <View className="absolute bottom-[20px] h-[73%] w-[90%] left-[20px]">
+            <View className="absolute h-full w-full">
               <TaskAddPopup command={closePopUp} />
             </View>
           </Modal>
