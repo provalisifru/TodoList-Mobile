@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const url = 'http://10.37.10.174:7202/';
+const url = 'http://192.168.0.103:7202/';
 
 const logIn = async (username, password) => {
   try {
@@ -86,7 +86,7 @@ const addTask = async (task, token) => {
     });
     return response;
   } catch (error) {
-    return error;
+    return error.response;
   }
 };
 

@@ -15,7 +15,6 @@ const MainScreen = ({navigation}: Props) => {
   const [userTasks, setUserTasks] = useState([]);
   const [deletedTasksId, setDeletedTasksId] = useState([]);
   const [flagIsChanged, setFlagIsChanged] = useState(false);
-
   const getTasks = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -137,7 +136,7 @@ const MainScreen = ({navigation}: Props) => {
     }
   };
 
-  const showDetails = taskId => {
+  const showDetails = (taskId: string) => {
     const taskIndex = userTasks.findIndex(task => task.taskId === taskId);
     const updatedTasks = [...userTasks];
 
@@ -145,10 +144,23 @@ const MainScreen = ({navigation}: Props) => {
       if (updatedTasks[taskIndex].detailsShown) {
         updatedTasks[taskIndex].detailsShown =
           !updatedTasks[taskIndex].detailsShown;
-      } else updatedTasks[taskIndex].detailsShown = true;
+      } else {
+        updatedTasks[taskIndex].detailsShown = true;
+      }
 
       setUserTasks(updatedTasks);
     }
+  };
+
+  const formatTime = time => {
+    const date = new Date(time);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const formattedTime = `${day}.${month}.${year}. ${hours}:${minutes}`;
+    return formattedTime;
   };
 
   return (
@@ -192,24 +204,30 @@ const MainScreen = ({navigation}: Props) => {
                   <View
                     key={id}
                     className="flex flex-row justify-between items-center">
-                    {task.isCompleted ? (
-                      <TouchableOpacity onPress={() => showDetails()}>
-                        <Text
-                          className="mx-5 my-2 text-[20px] text-taskFinished line-through"
-                          key={id}>
-                          {task.taskName}
-                        </Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        onPress={() => showDetails(task.taskId)}>
-                        <Text
-                          className="mx-5 my-2 text-[20px] text-textColor"
-                          key={id}>
-                          {task.taskName}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
+                    <View className="flex flex-row">
+                      <Text className="m-2 text-textColor inline text-[20px]">
+                        {id + 1}.
+                      </Text>
+                      {task.isCompleted ? (
+                        <TouchableOpacity
+                          onPress={() => showDetails(task.taskId)}>
+                          <Text
+                            className="m-2 text-[20px] text-taskFinished line-through"
+                            key={id}>
+                            {task.taskName}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={() => showDetails(task.taskId)}>
+                          <Text
+                            className="m-2 text-[20px] text-textColor"
+                            key={id}>
+                            {task.taskName}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                     <View className="flex flex-row items-center justify-end">
                       <TouchableOpacity
                         className="h-[26px] w-[26px] bg-white flex items-center mr-6"
@@ -229,6 +247,12 @@ const MainScreen = ({navigation}: Props) => {
                     <View key={`${id}details`}>
                       <Text className="mx-5 my-2 text-[15px] text-textColorThree">
                         {task.taskDescription}
+                      </Text>
+                      <Text className="mx-5 my-2 text-[15px] text-[#533669]">
+                        {task.taskCategory}
+                      </Text>
+                      <Text className="mx-5 my-2 text-[15px] text-[#533669]">
+                        {formatTime(task.taskDate)}
                       </Text>
                     </View>
                   ) : null}
